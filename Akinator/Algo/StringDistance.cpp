@@ -68,7 +68,7 @@ static unsigned int levenshtein_matrix_calculate(LevenshteinEdit **mat, const ch
 static LevenshteinEdit **levenshtein_matrix_create(size_t len1,
                                         size_t len2) {
     unsigned int i, j;
-    LevenshteinEdit **mat = (LevenshteinEdit **)malloc((len1 + 1) * sizeof(LevenshteinEdit *));
+    LevenshteinEdit **mat = (LevenshteinEdit **)calloc((len1 + 1), sizeof(LevenshteinEdit *));
     if (mat == nullptr) {
         return nullptr;
     }
@@ -121,7 +121,7 @@ unsigned int levenshtein_distance(StringView strView1, StringView strView2, Leve
     /* Main algorithm */
     distance = levenshtein_matrix_calculate(mat, str1, len1, str2, len2);
     /* Read back the edit script */
-    *script = (LevenshteinEdit *)malloc(distance * sizeof(LevenshteinEdit));
+    *script = (LevenshteinEdit *)calloc(distance, sizeof(LevenshteinEdit));
     if (*script) {
         i = distance - 1;
         for (head = &mat[len1][len2];
@@ -132,8 +132,7 @@ unsigned int levenshtein_distance(StringView strView1, StringView strView2, Leve
                 i--;
             }
         }
-    }
-    else {
+    } else {
         distance = 0;
     }
     /* Clean up */
@@ -141,6 +140,6 @@ unsigned int levenshtein_distance(StringView strView1, StringView strView2, Leve
         free(mat[i]);
     }
     free(mat);
-    
+    free(script);
     return distance;
 }
