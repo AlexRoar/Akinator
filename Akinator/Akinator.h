@@ -171,6 +171,10 @@ class Akinator {
                     printf(", ");
             }
         }
+        pathFirst.destructList();
+        pathSecond.destructList();
+        answerFirst.DestructString();
+        answerSecond.DestructString();
         printf("\n");
     }
 
@@ -201,6 +205,8 @@ class Akinator {
             if (0 != path.nextIterator(it))
                 printf(", ");
         }
+        path.destructList();
+        answer.DestructString();
         printf("\n");
     }
 
@@ -233,7 +239,9 @@ class Akinator {
 
     static bool askBoolAnswer() {
         StringView naming = getAnswerText();
-        return (naming.getBuffer()[0] == 'y' || naming.getBuffer()[0] == 'Y');
+        bool retVal = (naming.getBuffer()[0] == 'y' || naming.getBuffer()[0] == 'Y');
+        naming.DestructString();
+        return retVal;
     }
 
     void makeDecision() {
@@ -270,6 +278,7 @@ public:
                 printf("Unknown choice\n");
                 startGame();
         }
+        answer.DestructString();
     }
 
     bool isTerminated() {
