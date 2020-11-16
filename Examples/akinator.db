@@ -1,7 +1,10 @@
 "is alive" [
     "is phystech" [
         "is a student" [
-            "An average MIPT fun"
+            "my name" [
+                "Me"
+                "An average MIPT fun"
+            ]
             "An everage MIPT enjoyer"
         ]
         "is selling you something" [

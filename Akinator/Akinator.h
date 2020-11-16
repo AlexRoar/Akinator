@@ -19,7 +19,7 @@ class Akinator {
         printf("> ");
         char* buffer = static_cast<char*>(calloc(MAX_INPUT_LINE, sizeof(char)));
         fgets(buffer, MAX_INPUT_LINE, stdin);
-        auto str = StringView(buffer);
+        auto str = StringView(buffer, true);
         for (char* end = str.getBuffer() + str.getLength() - 1; end > str.getBuffer(); --end) {
             if (!(*end == ' ' || *end == '\n')) {
                 break;

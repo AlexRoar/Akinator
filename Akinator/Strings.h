@@ -10,9 +10,10 @@
 class StringView {
     char*   buffer;
     size_t  len;
+    bool    canBeFreed;
 public:
-    explicit StringView(char * line): buffer(line), len(strlen(line)){}
-    explicit StringView(char * line, size_t len): buffer(line), len(len){}
+    explicit StringView(char * line, bool canBeFreed=false): buffer(line), len(strlen(line)), canBeFreed(canBeFreed){}
+    explicit StringView(char * line, size_t len, bool canBeFreed=false): buffer(line), len(len), canBeFreed(canBeFreed){}
 
     [[nodiscard]] char* getBuffer() const {
         return this->buffer;
@@ -27,7 +28,8 @@ public:
     }
 
     void DestructString() {
-        free(buffer);
+        if (canBeFreed)
+            free(buffer);
     }
 
 };

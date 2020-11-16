@@ -36,7 +36,7 @@ public:
     }
 
     void DestructNode(){
-        node_name.DestructString();
+        this->getNodeName().DestructString();
         if(getLeft() != nullptr)
             getLeft()->DestructNode();
         if(getRight() != nullptr)

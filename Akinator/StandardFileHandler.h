@@ -46,14 +46,7 @@ class StandardFileHandler {
 
         *skipLen = foundEnd - start + 1;
         *foundEnd = '\0';
-
-        char* plainText = static_cast<char*>(calloc(foundEnd - foundStart + 1, sizeof(char)));
-        if (plainText == nullptr)
-            throw StandardFileException(SF_FILE_NO_MEM);
-        strcpy(plainText, foundStart + 1);
-
-        *foundEnd = '"';
-        return StringView(plainText);
+        return StringView(foundStart + 1);
     }
 
     static BinaryTree* retrieveNode(char*& data) {
