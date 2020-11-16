@@ -26,6 +26,5 @@ int main() {
     handler.fileDump(outFile);
     fclose(outFile);
     head->DestructNode();
-    delete head;
     return 0;
 }
