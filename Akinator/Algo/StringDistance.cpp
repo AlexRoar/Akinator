@@ -132,6 +132,7 @@ unsigned int levenshtein_distance(StringView strView1, StringView strView2, Leve
                 i--;
             }
         }
+        free(*script);
     } else {
         distance = 0;
     }
@@ -140,6 +141,5 @@ unsigned int levenshtein_distance(StringView strView1, StringView strView2, Leve
         free(mat[i]);
     }
     free(mat);
-    free(script);
     return distance;
 }
