@@ -1,7 +1,6 @@
 //
 // Created by Александр Дремов on 14.11.2020.
 //
-#include  <exception>
 #include  <cassert>
 #include  <cctype>
 #include "BinaryTree.h"
@@ -15,44 +14,37 @@ enum SFHandlerResult{
     SF_EMPTY,
     SF_FILE_WRONG_FORMAT,
     SF_FILE_WRONG_STRING,
-    SF_FILE_NO_MEM
-};
-
-class StandardFileException : public std::exception{
-    SFHandlerResult result;
-    int line;
-    const char* func;
-    char* why;
-public:
-    explicit StandardFileException(SFHandlerResult result, int line=0, const char* func= nullptr, char* why=nullptr): result(result), line(line), func(func), why(why){}
-    SFHandlerResult what(){
-        return this->result;
-    }
 };
 
 class StandardFileHandler {
     BinaryTree *treeHead;
 
-    static StringView retrievePlainText(char *start, size_t *skipLen) {
+    static StringView* retrievePlainText(char *start, size_t *skipLen, SFHandlerResult& result) {
         assert(start != nullptr && skipLen != nullptr);
 
         char* foundStart = strchr(start, '"');
-        if (foundStart == nullptr)
-            throw StandardFileException(SF_FILE_WRONG_STRING, __LINE__, __PRETTY_FUNCTION__ );
+        if (foundStart == nullptr) {
+            result = SF_FILE_WRONG_STRING;
+            return nullptr;
+        }
 
         char* foundEnd = strchr(foundStart + 1, '"');
-        if (foundEnd == nullptr)
-            throw StandardFileException(SF_FILE_WRONG_STRING, __LINE__, __PRETTY_FUNCTION__ );
+        if (foundEnd == nullptr){
+            result = SF_FILE_WRONG_STRING;
+            return nullptr;
+        }
 
         *skipLen = foundEnd - start + 1;
         *foundEnd = '\0';
-        return StringView(foundStart + 1);
+        return StringView::CreateNovel(foundStart + 1);
     }
 
-    static BinaryTree* retrieveNode(char*& data) {
+    static BinaryTree* retrieveNode(char*& data, SFHandlerResult& result) {
         size_t skipDist = 0;
-        StringView plainText = retrievePlainText(data, &skipDist);
-        auto* subtree = new BinaryTree(plainText);
+        StringView* plainText = retrievePlainText(data, &skipDist, result);
+        if (result != SF_SUCCESS)
+            return nullptr;
+        auto* subtree = BinaryTree::CreateNovel(plainText);
 
         data += skipDist;
         char* nextTextStart = strchr(data, '"');
@@ -61,49 +53,46 @@ class StandardFileHandler {
 
         if (branchesStart == nullptr && (branchesEnd  != nullptr && branchesEnd < nextTextStart) ||
             branchesEnd   == nullptr && branchesStart != nullptr){
-            throw StandardFileException(SF_FILE_WRONG_FORMAT, __LINE__, __PRETTY_FUNCTION__ );
+            result = SF_FILE_WRONG_FORMAT;
+            return nullptr;
         }
 
         if ((nextTextStart < branchesStart && nextTextStart != nullptr) || branchesStart == nullptr)
             return subtree;
 
-        if (nextTextStart == nullptr)
-            throw StandardFileException(SF_FILE_WRONG_FORMAT, __LINE__, __PRETTY_FUNCTION__ );
+        if (nextTextStart == nullptr) {
+            result = SF_FILE_WRONG_FORMAT;
+            return nullptr;
+        }
 
         if (branchesStart < branchesEnd) {
-            subtree->setLeft(retrieveNode(data));
-            subtree->setRight(retrieveNode(data));
+            subtree->setLeft(retrieveNode(data, result));
+            subtree->setRight(retrieveNode(data, result));
         }
         return subtree;
     }
 
-    static void expectInvisibleOnly(char* start, const char* end) {
-        assert(start!= nullptr);
-        while (start < end){
-            if (*start != ' ' && *start != '\n' && *start != '\t')
-                throw StandardFileException(SF_FILE_WRONG_FORMAT, __LINE__, __PRETTY_FUNCTION__, start);
-            start++;
+    void dumpAllNodes(FILE* file, SFHandlerResult& result) const {
+        dumpNode(file, this->treeHead, result);
+    }
+
+    void dumpNode(FILE* file, BinaryTree* node, SFHandlerResult& result, int depthLevel=0) const {
+        if (node == nullptr) {
+            result = SF_FILE_WRONG_FORMAT;
+            return;
         }
-    }
-
-    void dumpAllNodes(FILE* file) const {
-        dumpNode(file, this->treeHead);
-    }
-
-    void dumpNode(FILE* file, BinaryTree* node, int depthLevel = 0) const {
-        if (node == nullptr)
-            throw StandardFileException(SF_EMPTY, __LINE__, __PRETTY_FUNCTION__ );
-
         fprintf(file, "%*s", depthLevel * 4, "");
-        StringView name = node->getNodeName();
-        fprintf(file, "\"%s\"", (name.getBuffer() == nullptr)? "<unknown>": name.getBuffer());
+        StringView* name = node->getNodeName();
+        fprintf(file, "\"%s\"", (name->getBuffer() == nullptr)? "<unknown>": name->getBuffer());
         if (node->getLeft() != nullptr || node->getRight() != nullptr){
             fprintf(file, " [\n");
-            if (node->getLeft() == nullptr || node->getRight() == nullptr)
-                throw StandardFileException(SF_FILE_WRONG_FORMAT, __LINE__, __PRETTY_FUNCTION__ );
-            dumpNode(file, node->getLeft(), depthLevel + 1);
+            if (node->getLeft() == nullptr || node->getRight() == nullptr) {
+                result = SF_FILE_WRONG_FORMAT;
+                return;
+            }
+            dumpNode(file, node->getLeft(), result, depthLevel + 1);
             fprintf(file, "\n");
-            dumpNode(file, node->getRight(), depthLevel + 1);
+            dumpNode(file, node->getRight(), result,depthLevel + 1);
             fprintf(file, "\n%*s]", depthLevel * 4, "");
         }
     }
@@ -111,7 +100,7 @@ class StandardFileHandler {
 public:
     StandardFileHandler() : treeHead(nullptr) {}
 
-    SFHandlerResult loadFromFile(FILE* input, char*& commonBuffer) noexcept {
+    SFHandlerResult loadFromFile(FILE* input, char*& commonBuffer) {
         assert(input != nullptr);
 
         fseek(input, 0L, SEEK_END);
@@ -122,25 +111,19 @@ public:
         commonBuffer = buffer;
         fread(buffer, sizeof(char), numbytes, input);
 
-        try {
-            this->treeHead = retrieveNode(buffer);
-        } catch (StandardFileException& parseException) {
-            return parseException.what();
-        }
-        return SF_SUCCESS;
+        SFHandlerResult result = SF_SUCCESS;
+        this->treeHead = retrieveNode(buffer, result);
+        return result;
     }
 
-    SFHandlerResult fileDump(FILE* output) const noexcept {
+    SFHandlerResult fileDump(FILE* output) const {
         assert(output != nullptr);
-        try {
-            dumpAllNodes(output);
-        } catch (StandardFileException &parseException) {
-            return parseException.what();
-        }
-        return SF_SUCCESS;
+        SFHandlerResult result = SF_SUCCESS;
+        dumpAllNodes(output, result);
+        return result;
     }
 
-    [[nodiscard]] BinaryTree *getTreeHead() const noexcept {
+    [[nodiscard]] BinaryTree *getTreeHead() const {
         return treeHead;
     }
 };

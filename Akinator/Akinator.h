@@ -5,7 +5,7 @@
 #include "SwiftyList/SwiftyList.hpp"
 #include "Algo/StringDistance.hpp"
 #include <cctype>
-#include <stdarg.h>
+#include <cstdarg>
 
 #ifndef AKINATOR_AKINATOR_H
 #define AKINATOR_AKINATOR_H
@@ -15,8 +15,9 @@ const int MAX_INPUT_LINE = 100;
 class Akinator {
     BinaryTree       *head;
     BinaryTree       *currentNode;
+    bool              speak;
 
-    static void printfsay(const char* format...){
+    void printfsay(const char* format...) const{
         va_list argptr;
         va_start(argptr, format);
 
@@ -27,17 +28,18 @@ class Akinator {
         printf("%s", buffer + sizeof("say"));
 
         fflush(stdout);
-        system(buffer);
+        if (speak)
+            system(buffer);
         free(buffer);
         va_end(argptr);
     }
 
-    static StringView getAnswerText(){
+    static StringView* getAnswerText(){
         printf("> ");
         char* buffer = static_cast<char*>(calloc(MAX_INPUT_LINE, sizeof(char)));
         fgets(buffer, MAX_INPUT_LINE, stdin);
-        auto str = StringView(buffer, true);
-        for (char* end = str.getBuffer() + str.getLength() - 1; end > str.getBuffer(); --end) {
+        auto* str = StringView::CreateNovel(buffer, true);
+        for (char* end = str->getBuffer() + str->getLength() - 1; end > str->getBuffer(); --end) {
             if (!(*end == ' ' || *end == '\n')) {
                 break;
             }
@@ -47,10 +49,11 @@ class Akinator {
     }
 
     void askUser() {
-        printfsay("Is this true: %s?\n", currentNode->getNodeName().getBuffer());
+        printf("Is this true: %s?\n", currentNode->getNodeName()->getBuffer());
     }
 
     void startGuessing() {
+        this->currentNode = this->head;
         while(!isTerminated()) {
             askUser();
             makeDecision();
@@ -58,7 +61,7 @@ class Akinator {
         checkCorrectness();
     }
 
-    unsigned int traverseClosest(BinaryTree* node, StringView string, SwiftyList<bool>* path, bool mutating = false){
+    unsigned int traverseClosest(BinaryTree* node, StringView* string, SwiftyList<bool>* path, bool mutating = false){
         if (node == nullptr)
             return -1;
         if (node->getLeft() == nullptr || node->getRight() == nullptr) {
@@ -97,12 +100,12 @@ class Akinator {
     }
 
     void startDifference() {
-        printfsay("Who is the first character?\n");
-        StringView answerFirst = getAnswerText();
-        printfsay("Who is the second character?\n");
-        StringView answerSecond = getAnswerText();
-
         this->currentNode = this->head;
+        printf("Who is the first character?\n");
+        StringView* answerFirst = getAnswerText();
+        printf("Who is the second character?\n");
+        StringView* answerSecond = getAnswerText();
+
         auto pathFirst = SwiftyList<bool>(10, 0, nullptr, false);
         auto pathSecond = SwiftyList<bool>(10, 0, nullptr, false);
 
@@ -118,11 +121,11 @@ class Akinator {
 
         BinaryTree* lastElemFirst = theLastElem(this->head, &pathFirst);
         BinaryTree* lastElemSecond = theLastElem(this->head, &pathSecond);
-        if (strcmp(lastElemFirst->getNodeName().getBuffer(), answerFirst.getBuffer()) != 0){
-            printfsay("As for the first character, I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
+        if (strcmp(lastElemFirst->getNodeName()->getBuffer(), answerFirst->getBuffer()) != 0){
+            printf("As for the first character, I know only about \"%s\"\n", lastElemFirst->getNodeName()->getBuffer());
         }
-        if (strcmp(lastElemSecond->getNodeName().getBuffer(), answerSecond.getBuffer()) != 0){
-            printfsay("As for the second character, I know only about \"%s\"\n", lastElemSecond->getNodeName().getBuffer());
+        if (strcmp(lastElemSecond->getNodeName()->getBuffer(), answerSecond->getBuffer()) != 0){
+            printf("As for the second character, I know only about \"%s\"\n", lastElemSecond->getNodeName()->getBuffer());
         }
 
         bool differenceFired = false;
@@ -141,10 +144,10 @@ class Akinator {
                 break;
             }
             if (valFirst){
-                printfsay("%s", this->currentNode->getNodeName().getBuffer());
+                printfsay("%s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getLeft();
             } else {
-                printfsay("not %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getRight();
             }
             printf(", ");
@@ -153,15 +156,15 @@ class Akinator {
         BinaryTree* commonNode = this->currentNode;
         size_t commonFirst = itFirst;
         if (itFirst != 0) {
-            printfsay("but \"%s\" ", answerFirst.getBuffer());
+            printfsay("but \"%s\" ", answerFirst->getBuffer());
 //            itFirst = pathFirst.prevIterator(itFirst);
             for(;itFirst != 0; pathFirst.nextIterator(&itFirst)) {
                 pathFirst.get(itFirst, &valFirst);
                 if (valFirst){
-                    printfsay("%s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("%s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getLeft();
                 } else {
-                    printfsay("not %s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
                 if (0 != pathFirst.nextIterator(itFirst))
@@ -171,17 +174,17 @@ class Akinator {
         if (itSecond != 0) {
             this->currentNode = commonNode;
             if (commonFirst != 0)
-                printfsay(", while \"%s\" ", answerSecond.getBuffer());
+                printfsay(", while \"%s\" ", answerSecond->getBuffer());
             else
-                printfsay("but \"%s\" ", answerSecond.getBuffer());
+                printfsay("but \"%s\" ", answerSecond->getBuffer());
 //            itSecond = pathSecond.prevIterator(itSecond);
             for (; itSecond != 0; pathSecond.nextIterator(&itSecond)) {
                 pathSecond.get(itSecond, &valSecond);
                 if (valSecond) {
-                    printfsay("%s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("%s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getLeft();
                 } else {
-                    printfsay("not %s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
                 if (0 != pathSecond.nextIterator(itSecond))
@@ -190,47 +193,50 @@ class Akinator {
         }
         pathFirst.destructList();
         pathSecond.destructList();
-        answerFirst.DestructString();
-        answerSecond.DestructString();
+        answerFirst->DestructString();
+        answerSecond->DestructString();
+        free(answerFirst);
+        free(answerSecond);
         printf("\n");
     }
 
     void startDefinition() {
         printfsay("Who is your character?\n");
-        StringView answer = getAnswerText();
+        StringView* answer = getAnswerText();
 
         this->currentNode = this->head;
         auto path = SwiftyList<bool>(10, 0, nullptr, false);
         this->traverseClosest(this->currentNode, answer, &path, true);
 
         BinaryTree* lastElemFirst = theLastElem(this->head, &path);
-        if (strcmp(lastElemFirst->getNodeName().getBuffer(), answer.getBuffer()) != 0){
-            printfsay("I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
+        if (strcmp(lastElemFirst->getNodeName()->getBuffer(), answer->getBuffer()) != 0){
+            printfsay("I know only about \"%s\"\n", lastElemFirst->getNodeName()->getBuffer());
         }
-        printfsay("I know, that \"%s\"... ", lastElemFirst->getNodeName().getBuffer());
+        printfsay("I know, that \"%s\"... ", lastElemFirst->getNodeName()->getBuffer());
 
         for(size_t it = path.begin(); it != 0 && this->currentNode != nullptr; it = path.nextIterator(it)){
             bool val = false;
             path.get(it, &val);
             if (val){
-                printfsay("it %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("it %s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getLeft();
             } else {
-                printfsay("not %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getRight();
             }
             if (0 != path.nextIterator(it))
                 printf(", ");
         }
         path.destructList();
-        answer.DestructString();
+        answer->DestructString();
+        free(answer);
         printf("\n");
     }
 
     void checkCorrectness() {
         if (this->currentNode == nullptr)
             printfsay("No character found!\n");
-        printfsay("I guess it is... %s?\n", this->currentNode->getNodeName().getBuffer());
+        printfsay("I guess it is... %s?\n", this->currentNode->getNodeName()->getBuffer());
         if (askBoolAnswer()){
             printfsay("I knew it!\n");
             resetGuessing();
@@ -242,22 +248,23 @@ class Akinator {
     void askForCorrectSolution() {
         printfsay("Who's it then?\n");
 
-        StringView naming = getAnswerText();
+        StringView* naming = getAnswerText();
 
-        printfsay("What \"%s\" has that \"%s\" doesn't has?\n", naming.getBuffer(), this->currentNode->getNodeName().getBuffer());
+        printfsay("What \"%s\" has that \"%s\" doesn't has?\n", naming->getBuffer(), this->currentNode->getNodeName()->getBuffer());
 
-        StringView newTrait = getAnswerText();
-        auto newRight = StringView(this->currentNode->getNodeName().getBuffer());
+        StringView* newTrait = getAnswerText();
+        auto* newRight = StringView::CreateNovel(this->currentNode->getNodeName()->getBuffer());
 
         this->currentNode->setNodeName(newTrait);
-        this->currentNode->setLeft(new BinaryTree(naming));
-        this->currentNode->setRight(new BinaryTree(newRight));
+        this->currentNode->setLeft(BinaryTree::CreateNovel(naming));
+        this->currentNode->setRight(BinaryTree::CreateNovel(newRight));
     }
 
     static bool askBoolAnswer() {
-        StringView naming = getAnswerText();
-        bool retVal = (naming.getBuffer()[0] == 'y' || naming.getBuffer()[0] == 'Y');
-        naming.DestructString();
+        StringView* naming = getAnswerText();
+        bool retVal = (naming->getBuffer()[0] == 'y' || naming->getBuffer()[0] == 'Y');
+        naming->DestructString();
+        free(naming);
         return retVal;
     }
 
@@ -271,7 +278,13 @@ class Akinator {
     }
 
 public:
-    explicit Akinator(BinaryTree *head): head(head), currentNode(head) {}
+    static Akinator* CreateNovel(BinaryTree *head, bool speak=false){
+        auto* thou = static_cast<Akinator*>(calloc(1, sizeof(Akinator)));
+        thou->head        = head;
+        thou->currentNode = head;
+        thou->speak       = speak;
+        return thou;
+    }
 
     void resetGuessing() {
         this->currentNode = this->head;
@@ -279,9 +292,9 @@ public:
 
     void startGame() {
         printf("What you want me to do?\n "
-               "[1] - guess [2] - define [3] - difference\n");
-        StringView answer = getAnswerText();
-        switch (answer.getBuffer()[0]) {
+               "[1] - guess [2] - define [3] - difference [4] - exit\n");
+        StringView* answer = getAnswerText();
+        switch (answer->getBuffer()[0]) {
             case '1':
                 startGuessing();
                 break;
@@ -291,11 +304,19 @@ public:
             case '3':
                 startDifference();
                 break;
+            case '4': {
+                answer->DestructString();
+                free(answer);
+                printfsay("Bye\n");
+                return;
+            }
             default:
                 printf("Unknown choice\n");
                 startGame();
         }
-        answer.DestructString();
+        answer->DestructString();
+        free(answer);
+        startGame();
     }
 
     bool isTerminated() {

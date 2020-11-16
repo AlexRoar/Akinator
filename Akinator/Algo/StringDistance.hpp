@@ -39,7 +39,7 @@ static unsigned int levenshtein_matrix_calculate(LevenshteinEdit **mat, const ch
 
 static LevenshteinEdit **levenshtein_matrix_create(size_t len1, size_t len2);
 
-unsigned int levenshtein_distance(StringView, StringView , LevenshteinEdit **script);
+unsigned int levenshtein_distance(StringView*, StringView* , LevenshteinEdit **script);
 
 size_t trimwhitespace(char *out, size_t len, const char *str);
 

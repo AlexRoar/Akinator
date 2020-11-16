@@ -98,10 +98,9 @@ static LevenshteinEdit **levenshtein_matrix_create(size_t len1,
     return mat;
 }
 
-unsigned int levenshtein_distance(StringView strView1, StringView strView2, LevenshteinEdit **script)
-{
-    const size_t len1 = strView1.getLength(), len2 = strView2.getLength();
-    char* str1 = strView1.getBuffer(), *str2 = strView2.getBuffer();
+unsigned int levenshtein_distance(StringView* strView1, StringView* strView2, LevenshteinEdit **script) {
+    const size_t len1 = strView1->getLength(), len2 = strView2->getLength();
+    char* str1 = strView1->getBuffer(), *str2 = strView2->getBuffer();
     unsigned int i, distance;
     LevenshteinEdit **mat, *head;
     

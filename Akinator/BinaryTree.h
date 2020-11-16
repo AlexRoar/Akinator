@@ -7,9 +7,14 @@
 class BinaryTree {
     BinaryTree* left;
     BinaryTree* right;
-    StringView  node_name;
+    StringView* node_name;
 public:
-    explicit BinaryTree(StringView node_name): left(nullptr), right(nullptr), node_name(node_name){}
+    static BinaryTree* CreateNovel(StringView* node_name){
+        auto* thou = static_cast<BinaryTree*>(calloc(1, sizeof(BinaryTree)));
+        thou->left = thou->right = nullptr;
+        thou->node_name = node_name;
+        return thou;
+    }
 
     void setLeft(BinaryTree* left) {
         this->left = left;
@@ -27,21 +32,26 @@ public:
         return left;
     }
 
-    StringView getNodeName(){
+    StringView* getNodeName(){
         return node_name;
     }
 
-    void setNodeName(StringView name){
+    void setNodeName(StringView* name){
         this->node_name = name;
     }
 
     void DestructNode(){
-        this->getNodeName().DestructString();
-        if(getLeft() != nullptr)
+        this->getNodeName()->DestructString();
+        free(this->getNodeName());
+        this->setNodeName(reinterpret_cast<StringView *>(0xBADF));
+        if(getLeft() != nullptr) {
             getLeft()->DestructNode();
-        if(getRight() != nullptr)
+            free(getLeft());
+        }
+        if(getRight() != nullptr) {
             getRight()->DestructNode();
-        delete this;
+            free(getRight());
+        }
     }
 };
 

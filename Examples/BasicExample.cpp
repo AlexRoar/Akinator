@@ -20,16 +20,18 @@ int main() {
 
     BinaryTree* head = handler.getTreeHead();
 
-    auto akinator = Akinator(head);
+    auto* akinator = Akinator::CreateNovel(head);
 
-    akinator.startGame();
+    akinator->startGame();
 
     FILE* outFile = fopen("akinator.db", "w");
     assert(outFile);
     handler.fileDump(outFile);
-
     fclose(outFile);
+
     head->DestructNode();
     free(commonBuffer);
+    free(head);
+    free(akinator);
     return 0;
 }
