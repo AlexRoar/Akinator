@@ -7,10 +7,13 @@ int main() {
 
     FILE* inFile = fopen("akinator.db", "r");
     assert(inFile);
-    SFHandlerResult res = handler.loadFromFile(inFile);
+
+    char* commonBuffer = nullptr;
+    SFHandlerResult res = handler.loadFromFile(inFile, commonBuffer);
     if (res != SF_SUCCESS){
         printf("Failed loading database\n");
         fclose(inFile);
+        if (commonBuffer) free(commonBuffer);
         return EXIT_FAILURE;
     }
     fclose(inFile);
@@ -24,7 +27,9 @@ int main() {
     FILE* outFile = fopen("akinator.db", "w");
     assert(outFile);
     handler.fileDump(outFile);
+
     fclose(outFile);
     head->DestructNode();
+    free(commonBuffer);
     return 0;
 }

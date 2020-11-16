@@ -5,6 +5,7 @@
 #include "SwiftyList/SwiftyList.hpp"
 #include "Algo/StringDistance.hpp"
 #include <cctype>
+#include <stdarg.h>
 
 #ifndef AKINATOR_AKINATOR_H
 #define AKINATOR_AKINATOR_H
@@ -14,6 +15,22 @@ const int MAX_INPUT_LINE = 100;
 class Akinator {
     BinaryTree       *head;
     BinaryTree       *currentNode;
+
+    static void printfsay(const char* format...){
+        va_list argptr;
+        va_start(argptr, format);
+
+        char* buffer = static_cast<char*>(calloc(MAX_INPUT_LINE + 20, sizeof(char)));
+        strcpy(buffer, "say ");
+        vsprintf(buffer + sizeof("say"), format, argptr);
+
+        printf("%s", buffer + sizeof("say"));
+
+        fflush(stdout);
+        system(buffer);
+        free(buffer);
+        va_end(argptr);
+    }
 
     static StringView getAnswerText(){
         printf("> ");
@@ -30,7 +47,7 @@ class Akinator {
     }
 
     void askUser() {
-        printf("Is this true: %s?\n", currentNode->getNodeName().getBuffer());
+        printfsay("Is this true: %s?\n", currentNode->getNodeName().getBuffer());
     }
 
     void startGuessing() {
@@ -80,9 +97,9 @@ class Akinator {
     }
 
     void startDifference() {
-        printf("Who is the first character?\n");
+        printfsay("Who is the first character?\n");
         StringView answerFirst = getAnswerText();
-        printf("Who is the second character?\n");
+        printfsay("Who is the second character?\n");
         StringView answerSecond = getAnswerText();
 
         this->currentNode = this->head;
@@ -102,18 +119,18 @@ class Akinator {
         BinaryTree* lastElemFirst = theLastElem(this->head, &pathFirst);
         BinaryTree* lastElemSecond = theLastElem(this->head, &pathSecond);
         if (strcmp(lastElemFirst->getNodeName().getBuffer(), answerFirst.getBuffer()) != 0){
-            printf("As for the first character, I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
+            printfsay("As for the first character, I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
         }
         if (strcmp(lastElemSecond->getNodeName().getBuffer(), answerSecond.getBuffer()) != 0){
-            printf("As for the second character, I know only about \"%s\"\n", lastElemSecond->getNodeName().getBuffer());
+            printfsay("As for the second character, I know only about \"%s\"\n", lastElemSecond->getNodeName().getBuffer());
         }
 
         bool differenceFired = false;
         if (valFirst != valSecond){
             differenceFired = true;
-            printf("Your characters have nothing in common. \n");
+            printfsay("Your characters have nothing in common. \n");
         } else {
-            printf("Your characters both ");
+            printfsay("Your characters both ");
         }
 
         for(;itFirst != 0 && itSecond != 0 && !differenceFired;
@@ -124,10 +141,10 @@ class Akinator {
                 break;
             }
             if (valFirst){
-                printf("%s", this->currentNode->getNodeName().getBuffer());
+                printfsay("%s", this->currentNode->getNodeName().getBuffer());
                 this->currentNode = this->currentNode->getLeft();
             } else {
-                printf("not %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("not %s", this->currentNode->getNodeName().getBuffer());
                 this->currentNode = this->currentNode->getRight();
             }
             printf(", ");
@@ -136,15 +153,15 @@ class Akinator {
         BinaryTree* commonNode = this->currentNode;
         size_t commonFirst = itFirst;
         if (itFirst != 0) {
-            printf("but \"%s\" ", answerFirst.getBuffer());
+            printfsay("but \"%s\" ", answerFirst.getBuffer());
 //            itFirst = pathFirst.prevIterator(itFirst);
             for(;itFirst != 0; pathFirst.nextIterator(&itFirst)) {
                 pathFirst.get(itFirst, &valFirst);
                 if (valFirst){
-                    printf("%s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("%s", this->currentNode->getNodeName().getBuffer());
                     this->currentNode = this->currentNode->getLeft();
                 } else {
-                    printf("not %s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("not %s", this->currentNode->getNodeName().getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
                 if (0 != pathFirst.nextIterator(itFirst))
@@ -154,17 +171,17 @@ class Akinator {
         if (itSecond != 0) {
             this->currentNode = commonNode;
             if (commonFirst != 0)
-                printf(", while \"%s\" ", answerSecond.getBuffer());
+                printfsay(", while \"%s\" ", answerSecond.getBuffer());
             else
-                printf("but \"%s\" ", answerSecond.getBuffer());
+                printfsay("but \"%s\" ", answerSecond.getBuffer());
 //            itSecond = pathSecond.prevIterator(itSecond);
             for (; itSecond != 0; pathSecond.nextIterator(&itSecond)) {
                 pathSecond.get(itSecond, &valSecond);
                 if (valSecond) {
-                    printf("%s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("%s", this->currentNode->getNodeName().getBuffer());
                     this->currentNode = this->currentNode->getLeft();
                 } else {
-                    printf("not %s", this->currentNode->getNodeName().getBuffer());
+                    printfsay("not %s", this->currentNode->getNodeName().getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
                 if (0 != pathSecond.nextIterator(itSecond))
@@ -179,7 +196,7 @@ class Akinator {
     }
 
     void startDefinition() {
-        printf("Who is your character?\n");
+        printfsay("Who is your character?\n");
         StringView answer = getAnswerText();
 
         this->currentNode = this->head;
@@ -188,18 +205,18 @@ class Akinator {
 
         BinaryTree* lastElemFirst = theLastElem(this->head, &path);
         if (strcmp(lastElemFirst->getNodeName().getBuffer(), answer.getBuffer()) != 0){
-            printf("I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
+            printfsay("I know only about \"%s\"\n", lastElemFirst->getNodeName().getBuffer());
         }
-        printf("I know, that \"%s\"... ", lastElemFirst->getNodeName().getBuffer());
+        printfsay("I know, that \"%s\"... ", lastElemFirst->getNodeName().getBuffer());
 
         for(size_t it = path.begin(); it != 0 && this->currentNode != nullptr; it = path.nextIterator(it)){
             bool val = false;
             path.get(it, &val);
             if (val){
-                printf("it %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("it %s", this->currentNode->getNodeName().getBuffer());
                 this->currentNode = this->currentNode->getLeft();
             } else {
-                printf("not %s", this->currentNode->getNodeName().getBuffer());
+                printfsay("not %s", this->currentNode->getNodeName().getBuffer());
                 this->currentNode = this->currentNode->getRight();
             }
             if (0 != path.nextIterator(it))
@@ -212,10 +229,10 @@ class Akinator {
 
     void checkCorrectness() {
         if (this->currentNode == nullptr)
-            printf("No character found!\n");
-        printf("I guess it is... %s?\n", this->currentNode->getNodeName().getBuffer());
+            printfsay("No character found!\n");
+        printfsay("I guess it is... %s?\n", this->currentNode->getNodeName().getBuffer());
         if (askBoolAnswer()){
-            printf("I knew it!\n");
+            printfsay("I knew it!\n");
             resetGuessing();
         } else {
             askForCorrectSolution();
@@ -223,11 +240,11 @@ class Akinator {
     }
 
     void askForCorrectSolution() {
-        printf("Who's it then?\n");
+        printfsay("Who's it then?\n");
 
         StringView naming = getAnswerText();
 
-        printf("What \"%s\" has that \"%s\" doesn't has?\n", naming.getBuffer(), this->currentNode->getNodeName().getBuffer());
+        printfsay("What \"%s\" has that \"%s\" doesn't has?\n", naming.getBuffer(), this->currentNode->getNodeName().getBuffer());
 
         StringView newTrait = getAnswerText();
         auto newRight = StringView(this->currentNode->getNodeName().getBuffer());

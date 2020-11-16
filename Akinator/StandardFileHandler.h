@@ -111,7 +111,7 @@ class StandardFileHandler {
 public:
     StandardFileHandler() : treeHead(nullptr) {}
 
-    SFHandlerResult loadFromFile(FILE* input) noexcept {
+    SFHandlerResult loadFromFile(FILE* input, char*& commonBuffer) noexcept {
         assert(input != nullptr);
 
         fseek(input, 0L, SEEK_END);
@@ -119,12 +119,11 @@ public:
         fseek(input, 0L, SEEK_SET);
 
         char* buffer = static_cast<char*>(calloc(numbytes + 1, sizeof(char)));
-        char* unchangedBuffer = buffer;
+        commonBuffer = buffer;
         fread(buffer, sizeof(char), numbytes, input);
 
         try {
             this->treeHead = retrieveNode(buffer);
-            free(unchangedBuffer);
         } catch (StandardFileException& parseException) {
             return parseException.what();
         }
