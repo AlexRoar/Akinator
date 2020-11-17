@@ -106,21 +106,21 @@ class Akinator {
         printf("Who is the second character?\n");
         StringView* answerSecond = getAnswerText();
 
-        auto pathFirst = SwiftyList<bool>(10, 0, nullptr, false);
-        auto pathSecond = SwiftyList<bool>(10, 0, nullptr, false);
+        auto* pathFirst = SwiftyList<bool>::CreateNovel(10, 0, nullptr, false);
+        auto* pathSecond = SwiftyList<bool>::CreateNovel(10, 0, nullptr, false);
 
-        this->traverseClosest(this->currentNode, answerFirst, &pathFirst, true);
-        this->traverseClosest(this->currentNode, answerSecond, &pathSecond, true);
+        this->traverseClosest(this->currentNode, answerFirst, pathFirst, true);
+        this->traverseClosest(this->currentNode, answerSecond, pathSecond, true);
 
-        size_t itFirst  = pathFirst.begin();
-        size_t itSecond = pathSecond.begin();
+        size_t itFirst  = pathFirst->begin();
+        size_t itSecond = pathSecond->begin();
 
         bool valFirst = false, valSecond = false;
-        pathFirst.get(itFirst, &valFirst);
-        pathSecond.get(itSecond, &valSecond);
+        pathFirst->get(itFirst, &valFirst);
+        pathSecond->get(itSecond, &valSecond);
 
-        BinaryTree* lastElemFirst = theLastElem(this->head, &pathFirst);
-        BinaryTree* lastElemSecond = theLastElem(this->head, &pathSecond);
+        BinaryTree* lastElemFirst = theLastElem(this->head, pathFirst);
+        BinaryTree* lastElemSecond = theLastElem(this->head, pathSecond);
         if (strcmp(lastElemFirst->getNodeName()->getBuffer(), answerFirst->getBuffer()) != 0){
             printf("As for the first character, I know only about \"%s\"\n", lastElemFirst->getNodeName()->getBuffer());
         }
@@ -137,9 +137,9 @@ class Akinator {
         }
 
         for(;itFirst != 0 && itSecond != 0 && !differenceFired;
-             pathFirst.nextIterator(&itFirst), pathSecond.nextIterator(&itSecond)){
-            pathFirst.get(itFirst, &valFirst);
-            pathSecond.get(itSecond, &valSecond);
+             pathFirst->nextIterator(&itFirst), pathSecond->nextIterator(&itSecond)){
+            pathFirst->get(itFirst, &valFirst);
+            pathSecond->get(itSecond, &valSecond);
             if (valFirst != valSecond) {
                 break;
             }
@@ -158,8 +158,8 @@ class Akinator {
         if (itFirst != 0) {
             printfsay("but \"%s\" ", answerFirst->getBuffer());
 //            itFirst = pathFirst.prevIterator(itFirst);
-            for(;itFirst != 0; pathFirst.nextIterator(&itFirst)) {
-                pathFirst.get(itFirst, &valFirst);
+            for(;itFirst != 0; pathFirst->nextIterator(&itFirst)) {
+                pathFirst->get(itFirst, &valFirst);
                 if (valFirst){
                     printfsay("%s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getLeft();
@@ -167,7 +167,7 @@ class Akinator {
                     printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
-                if (0 != pathFirst.nextIterator(itFirst))
+                if (0 != pathFirst->nextIterator(itFirst))
                     printf(", ");
             }
         }
@@ -178,8 +178,8 @@ class Akinator {
             else
                 printfsay("but \"%s\" ", answerSecond->getBuffer());
 //            itSecond = pathSecond.prevIterator(itSecond);
-            for (; itSecond != 0; pathSecond.nextIterator(&itSecond)) {
-                pathSecond.get(itSecond, &valSecond);
+            for (; itSecond != 0; pathSecond->nextIterator(&itSecond)) {
+                pathSecond->get(itSecond, &valSecond);
                 if (valSecond) {
                     printfsay("%s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getLeft();
@@ -187,16 +187,18 @@ class Akinator {
                     printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                     this->currentNode = this->currentNode->getRight();
                 }
-                if (0 != pathSecond.nextIterator(itSecond))
+                if (0 != pathSecond->nextIterator(itSecond))
                     printf(", ");
             }
         }
-        pathFirst.destructList();
-        pathSecond.destructList();
+        pathFirst->DestructList();
+        pathSecond->DestructList();
         answerFirst->DestructString();
         answerSecond->DestructString();
         free(answerFirst);
         free(answerSecond);
+        free(pathFirst);
+        free(pathSecond);
         printf("\n");
     }
 
@@ -205,18 +207,18 @@ class Akinator {
         StringView* answer = getAnswerText();
 
         this->currentNode = this->head;
-        auto path = SwiftyList<bool>(10, 0, nullptr, false);
-        this->traverseClosest(this->currentNode, answer, &path, true);
+        auto* path = SwiftyList<bool>::CreateNovel(10, 0, nullptr, false);
+        this->traverseClosest(this->currentNode, answer, path, true);
 
-        BinaryTree* lastElemFirst = theLastElem(this->head, &path);
+        BinaryTree* lastElemFirst = theLastElem(this->head, path);
         if (strcmp(lastElemFirst->getNodeName()->getBuffer(), answer->getBuffer()) != 0){
             printfsay("I know only about \"%s\"\n", lastElemFirst->getNodeName()->getBuffer());
         }
         printfsay("I know, that \"%s\"... ", lastElemFirst->getNodeName()->getBuffer());
 
-        for(size_t it = path.begin(); it != 0 && this->currentNode != nullptr; it = path.nextIterator(it)){
+        for(size_t it = path->begin(); it != 0 && this->currentNode != nullptr; it = path->nextIterator(it)){
             bool val = false;
-            path.get(it, &val);
+            path->get(it, &val);
             if (val){
                 printfsay("it %s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getLeft();
@@ -224,12 +226,13 @@ class Akinator {
                 printfsay("not %s", this->currentNode->getNodeName()->getBuffer());
                 this->currentNode = this->currentNode->getRight();
             }
-            if (0 != path.nextIterator(it))
+            if (0 != path->nextIterator(it))
                 printf(", ");
         }
-        path.destructList();
+        path->DestructList();
         answer->DestructString();
         free(answer);
+        free(path);
         printf("\n");
     }
 
