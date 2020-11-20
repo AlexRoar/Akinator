@@ -73,7 +73,7 @@ static LevenshteinEdit **levenshtein_matrix_create(size_t len1,
         return nullptr;
     }
     for (i = 0; i <= len1; i++) {
-        mat[i] = (LevenshteinEdit *)malloc((len2 + 1) * sizeof(LevenshteinEdit));
+        mat[i] = (LevenshteinEdit *)calloc(1, (len2 + 1) * sizeof(LevenshteinEdit));
         if (mat[i] == nullptr) {
             for (j = 0; j < i; j++) {
                 free(mat[j]);

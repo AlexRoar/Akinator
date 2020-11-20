@@ -20,7 +20,7 @@ int main() {
 
     BinaryTree* head = handler.getTreeHead();
 
-    auto* akinator = Akinator::CreateNovel(head);
+    auto* akinator = Akinator::CreateNovel(head, false);
 
     akinator->startGame();
 

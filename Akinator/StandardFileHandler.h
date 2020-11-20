@@ -25,11 +25,13 @@ class StandardFileHandler {
         char* foundStart = strchr(start, '"');
         if (foundStart == nullptr) {
             result = SF_FILE_WRONG_STRING;
+            printf("Failed parsing on (no start) %s\n", start);
             return nullptr;
         }
 
         char* foundEnd = strchr(foundStart + 1, '"');
         if (foundEnd == nullptr){
+            printf("Failed parsing on (no end) %s\n", start);
             result = SF_FILE_WRONG_STRING;
             return nullptr;
         }
@@ -51,9 +53,9 @@ class StandardFileHandler {
         char* branchesStart = strchr(data, '[');
         char* branchesEnd   = strchr(data, ']');
 
-        if (branchesStart == nullptr && (branchesEnd  != nullptr && branchesEnd < nextTextStart) ||
-            branchesEnd   == nullptr && branchesStart != nullptr){
+        if (branchesEnd == nullptr && branchesStart != nullptr){
             result = SF_FILE_WRONG_FORMAT;
+            printf("Failed parsing on (brackets) %s\n", data);
             return nullptr;
         }
 
@@ -62,6 +64,7 @@ class StandardFileHandler {
 
         if (nextTextStart == nullptr) {
             result = SF_FILE_WRONG_FORMAT;
+            printf("Failed parsing on (no next start) %s\n", data);
             return nullptr;
         }
 

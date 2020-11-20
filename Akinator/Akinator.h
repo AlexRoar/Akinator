@@ -17,7 +17,7 @@ class Akinator {
     BinaryTree       *currentNode;
     bool              speak;
 
-    void printfsay(const char* format...) const{
+    void printfsay(const char* format...) const {
         va_list argptr;
         va_start(argptr, format);
 
@@ -280,6 +280,32 @@ class Akinator {
             this->currentNode = this->currentNode->getRight();
     }
 
+    void dumpNode(FILE* out, BinaryTree* node){
+        if (!node)
+            return;
+        if (node->getLeft() == nullptr && node->getRight() == nullptr)
+            fprintf(out, "\tnode_%p [label=\"%s\" shape=\"invhouse\" fillcolor=\"aliceblue\" style=filled];\n", node, node->getNodeName()->getBuffer());
+        else
+            fprintf(out, "\tnode_%p [label=\"%s\" shape=\"box3d\"];\n", node, node->getNodeName()->getBuffer());
+        if (node->getLeft())
+            fprintf(out, "\tnode_%p->node_%p [color=\"green\" label=\"yes\" fontcolor=\"green\"];\n", node, node->getLeft());
+        if (node->getRight())
+            fprintf(out, "\tnode_%p->node_%p [color=\"darkred\" label=\"no\" fontcolor=\"darkred\"];\n", node, node->getRight());
+        dumpNode(out, node->getLeft());
+        dumpNode(out, node->getRight());
+    }
+
+    void buildGraph() {
+        FILE* graph = fopen("tmp.gv", "w");
+
+        fprintf(graph, "digraph akinator {\n");
+        dumpNode(graph, head);
+        fprintf(graph, "}\n");
+        fclose(graph);
+        system("dot -Tsvg tmp.gv -o graph.svg");
+        system("dot -Tpng tmp.gv -o graph.png");
+    }
+
 public:
     static Akinator* CreateNovel(BinaryTree *head, bool speak=false){
         auto* thou = static_cast<Akinator*>(calloc(1, sizeof(Akinator)));
@@ -295,7 +321,7 @@ public:
 
     void startGame() {
         printf("What you want me to do?\n "
-               "[1] - guess [2] - define [3] - difference [4] - exit\n");
+               "\t[1] - guess\n\t[2] - define\n\t[3] - difference\n\t[4] - exit and save\n\t[5] - build graph\n");
         StringView* answer = getAnswerText();
         switch (answer->getBuffer()[0]) {
             case '1':
@@ -312,6 +338,10 @@ public:
                 free(answer);
                 printfsay("Bye\n");
                 return;
+            }
+            case '5': {
+                buildGraph();
+                break;
             }
             default:
                 printf("Unknown choice\n");

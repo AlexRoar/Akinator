@@ -1,13 +1,7 @@
 "is alive" [
     "is phystech" [
         "is a student" [
-            "my name" [
-                "inside" [
-                    "My soul"
-                    "Me"
-                ]
-                "An average MIPT fun"
-            ]
+            "An average MIPT fun"
             "An everage MIPT enjoyer"
         ]
         "is selling you something" [
@@ -71,7 +65,10 @@
         "is a sport court" [
             "The great MIPT stadium"
             "does shock you" [
-                "Mathematical logic course with Evgeniy Dashkov"
+                "is infinite" [
+                    "the Universe"
+                    "Mathematical logic course with Evgeniy Dashkov"
+                ]
                 "is associated with night-time debugging" [
                     "does have a chance of grading you with 16" [
                         "Introduction to data structures course with Ilya Dedinsky"
@@ -81,7 +78,40 @@
                         "Mathematical Analysis course with Vadim Redkozubov"
                         "is dirty" [
                             "seedbed"
-                            "Analytical geometry course with Anna Petrovich"
+                            "is game" [
+                                "is slavic RPG" [
+                                    "is made in Czech" [
+                                        "Kingdom Come: Deliverance"
+                                        "Witcher 3"
+                                    ]
+                                    "is made by Bethesda" [
+                                        "is best Fallout game" [
+                                            "Fallout 2"
+                                            "is worst Fallout game" [
+                                                "Fallout 76"
+                                                "can be launched on calculator" [
+                                                    "Doom"
+                                                    "Fallout New Vegas"
+                                                ]
+                                            ]
+                                        ]
+                                        "does have western setting" [
+                                            "Red Dead Redemption 2"
+                                            "is the best game ever made" [
+                                                "Minecraft"
+                                                "is in developing now :(" [
+                                                    "Cyberpunk 2077"
+                                                    "GTA 5"
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                                "hotel" [
+                                    "Trivago"
+                                    "Analytical geometry course with Anna Petrovich"
+                                ]
+                            ]
                         ]
                     ]
                 ]
